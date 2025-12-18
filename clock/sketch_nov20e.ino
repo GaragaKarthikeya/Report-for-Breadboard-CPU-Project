@@ -1,7 +1,8 @@
 void setup() {
   // put your setup code here, to run once:
 pinMode(13,OUTPUT);
-digitalWrite(1000);
+digitalWrite(13,LOW);//initially set the pin to low
+delay(1);
 }
 
 void loop() {
