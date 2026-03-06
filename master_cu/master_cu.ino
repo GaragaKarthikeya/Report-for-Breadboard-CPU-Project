@@ -3,8 +3,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define SR_CLK 11
-#define PC_CLK_PIN 12
+// #define SR_CLK 11
+// #define PC_CLK_PIN 12
 #define CLK_PIN 13
 #define SERIAL 10
 
@@ -51,16 +51,16 @@ void setup() {
   Wire.begin();
  
   Serial.begin(9600);
-  pinMode(PC_CLK_PIN, OUTPUT);
+  // pinMode(PC_CLK_PIN, OUTPUT);
   pinMode(CLK_PIN, OUTPUT);
-  digitalWrite(PC_CLK_PIN, LOW);
+  // digitalWrite(PC_CLK_PIN, LOW);
   digitalWrite(CLK_PIN, LOW);
 
   for (int i = 0; i < 8; i++) {
     pinMode(pins[i], INPUT);
   }
-  pinMode(SR_CLK,OUTPUT);
-  digitalWrite(SR_CLK,LOW);
+  // pinMode(SR_CLK,OUTPUT);
+  // digitalWrite(SR_CLK,LOW);
   pinMode(SERIAL,OUTPUT);
 }
 
