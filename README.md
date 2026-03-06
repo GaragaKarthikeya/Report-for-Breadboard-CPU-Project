@@ -412,7 +412,7 @@ This project demonstrates the implementation of a working **8-bit CPU** using:
   **8 horizontal lines** of the breadboard are used.
   Each line represents **one bit of the data bus**.
 - Arduino boards for control and memory
-- A shared 8-bit data bus
+
 
 The design illustrates the fundamental operations of a processor including:
 
