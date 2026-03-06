@@ -13,7 +13,7 @@ uint8_t inst_mem[256] = {
   0b10011111,
   0b10101111,
   0b10111011,
-};  // 256-location instruction memory
+};  // 256-location instruction memory some instructions are preloaded.    
 
 uint8_t data_mem[16]  = {1,2,3,4,7,6,7,8,9,10,11,12,13,14,15,16};  // 16-location data memory (4-bit address)
 
@@ -50,7 +50,7 @@ void setup() {
 void loop() {
   int clk     = digitalRead(13);
 
-  // <<< MINIMAL CHANGE HERE >>>
+  // <<< MINIMAL CHANGE HERE >>>--
   // Treat MEM_WORK as active-low: external pulls LOW when transaction active
   bool memActive = (digitalRead(10) == LOW);
   // <<< end minimal change >>>
