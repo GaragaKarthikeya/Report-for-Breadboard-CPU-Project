@@ -134,6 +134,7 @@ The control unit is implemented using **three Arduino boards**.
 The master Arduino is responsible for:
 
 - Generating the **clock signal** for the entire CPU
+- Generating the  **clock signal** for the program counter.
 - Receiving instructions from the **Instruction Register**
 - **Decoding the opcode**
 - Sending commands to the slave control units
