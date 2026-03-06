@@ -1,3 +1,4 @@
+//This is the code for the master control unit which sets the control signals based on the instruction and the stage of the instruction ,this has 8 pins which it takes in to decode the instruction received by the cpu.
 #include <Arduino.h>
 #include <Wire.h>
 
