@@ -1,4 +1,5 @@
 //This is the code for the master control unit which sets the control signals based on the instruction and the stage of the instruction ,this has 8 pins which it takes in to decode the instruction received by the cpu.
+//The data memory address is 4 bits wide(16 available locations) which will be set onto the bus by the control unit when the address should be received by the memory.
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -88,21 +89,39 @@ void writeCUAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   digitalWrite(pins[3], d);
   for (int i = 4; i < 8; i++) digitalWrite(pins[i], HIGH);
 }
-void load_shift_reg(uint8_t *controls[]){
-  for(int i=0;i<20;i++){
-    digitalWrite(SERIAL,*controls[i]);
-    digitalWrite(SR_CLK,HIGH);
-    delay(1);
-    digitalWrite(SR_CLK,LOW);
-    delay(1);
-  }//writing all the control signals to the shift register 
+void load_controls(uint8_t *controls[]) {
+
+  uint16_t slave1 = 0;
+  uint16_t slave2 = 0;
+
+  // pack first 10 control bits for slave 1
+  for (int i = 0; i < 10; i++) {
+    slave1 |= ((*controls[i] & 1) << i);
+  }
+
+  // pack next 10 control bits for slave 2
+  for (int i = 10; i < 20; i++) {
+    slave2 |= ((*controls[i] & 1) << (i - 10));
+  }
+
+  // send to slave 1 (address 8)
+  Wire.beginTransmission(8);
+  Wire.write((uint8_t)(slave1 & 0xFF));      // low byte
+  Wire.write((uint8_t)((slave1 >> 8) & 0xFF)); // high byte
+  Wire.endTransmission();
+
+  // send to slave 2 (address 9)
+  Wire.beginTransmission(9);
+  Wire.write((uint8_t)(slave2 & 0xFF));
+  Wire.write((uint8_t)((slave2 >> 8) & 0xFF));
+  Wire.endTransmission();
 }
 // Helper: Execute ALU instruction (ADD, SUB, AND, OR)
 void executeALU(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t op1, uint8_t op0) {
   // 5th cycle
   writeCUAddress(a, b, c, d);
   mar_read = 0;
-   load_shift_reg(controls);
+   load_controls(controls);
   debug( 5);
 
   // 6th cycle
@@ -110,7 +129,7 @@ void executeALU(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t op1, uint8_t
   mem_read_write = 0;
   mem_work = 1;
   inst_or_mem = 1;
-   load_shift_reg(controls);
+   load_controls(controls);
   debug( 6);
 
   // 7th cycle
@@ -120,13 +139,13 @@ void executeALU(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t op1, uint8_t
   b_read = 0;
   alu_op1 = op1;
   alu_op0 = op0;
-   load_shift_reg(controls);
+   load_controls(controls);
   debug( 7);
 
   // 8th cycle
   alu_write = 0;
   a_read = 0;
-   load_shift_reg(controls);
+   load_controls(controls);
   debug( 8);
 }
 
@@ -138,7 +157,7 @@ void loop() {
   // 1st cycle
   pc_write = 0;
   mar_read = 0;
-  load_shift_reg(controls);
+  load_controls(controls);
   debug( 1);
 
   // 2nd cycle
@@ -146,21 +165,21 @@ void loop() {
   mem_work = 1;
   mem_read_write = 0;
   inst_or_mem = 0;
-  load_shift_reg(controls);
+  load_controls(controls);
   debug( 2);
 
   // 3rd cycle
   mem_read_write = 1;
   inst_or_mem = 0;
   ir_read = 0;
-   load_shift_reg(controls);
+   load_controls(controls);
   debug( 3);
 
   // 4th cycle - Read opcode from IR
   ir_write = 0;
   cu_work = 0;
   cu_read_write = 1;
-  load_shift_reg(controls);
+  load_controls(controls);
 
   for (int i = 0; i < 8; i++)
     pinMode(pins[i], INPUT);
@@ -188,20 +207,20 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     mar_read = 0;
-    load_shift_reg(controls);
+    load_controls(controls);
     debug( 5);
     // 6th cycle
     mar_write = 0;
     mem_read_write = 0;
     mem_work = 1;
     inst_or_mem = 1;
-    load_shift_reg(controls);
+    load_controls(controls);
     debug( 6);
     // 7th cycle
     mem_read_write = 1;
     inst_or_mem = 1;
     a_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 7);
     delay(2000);
   }
@@ -210,7 +229,7 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     a_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     delay(6000);
   }
@@ -219,21 +238,21 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     mar_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     // 6th cycle
     mar_write = 0;
     mem_read_write = 0;
     mem_work = 1;
     inst_or_mem = 1;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 6);
     // 7th cycle
     a_write = 0;
     mem_read_write = 0;
     mem_work = 1;
     inst_or_mem = 1;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 7);
     delay(2000);
   }
@@ -258,11 +277,11 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     mar_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     // 6th cycle
     uj = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 6);
     delay(4000);
   }
@@ -271,11 +290,11 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     mar_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     // 6th cycle
     jcz = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 6);
     delay(4000);
   }
@@ -284,11 +303,11 @@ void loop() {
     // 5th cycle
     writeCUAddress(a, b, c, d);
     mar_read = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     // 6th cycle
     jsz = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 6);
     delay(4000);
   }
@@ -297,7 +316,7 @@ void loop() {
     // 5th cycle
     out_enable = 0;
     a_write = 0;
-     load_shift_reg(controls);
+     load_controls(controls);
     debug( 5);
     delay(6000);
   }
